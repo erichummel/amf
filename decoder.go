@@ -9,7 +9,6 @@ import (
 	"errors"
 	"io"
 	"math"
-	"amf0"
 )
 
 type Decoder struct {
