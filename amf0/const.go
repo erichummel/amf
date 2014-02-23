@@ -18,4 +18,5 @@ const (
 	RecordsetMarker
 	XmlDocumentMarker
 	TypedObjectMarker
+	SwitchToAmf3Marker
 )
