@@ -162,8 +162,8 @@ func (dec *Decoder) decodeValue() (interface{}, error) {
 		return object, nil
 	case SwitchToAmf3Marker:
 		var obj amf3.ObjectType
-		var amf0Decoder amf3.Decoder = NewDecoder(dec.r)
-		obj, err = amf0Decoder.Decode()
+		var amf3Decoder amf3.Decoder = NewDecoder(dec.r)
+		obj, err = amf3Decoder.Decode()
 		if err != nil {
 			return nil, err
 		}
