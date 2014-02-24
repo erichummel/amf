@@ -6,9 +6,8 @@ package amf
 import (
 	"bufio"
 	"encoding/binary"
-	"errors"
 	"io"
-	"math"
+	"github.com/marcuswu/amf/amf0"
 )
 
 type Decoder struct {
@@ -33,7 +32,7 @@ func (dec *Decoder) Decode() (p *Packet, err error) {
 }
 
 func (dec *Decoder) decodePacket() (p *Packet, err error) {
-	p = Packet{}
+	p = &Packet{}
 	u16 := make([]byte, 2)
 
 	_, err = dec.r.Read(u16)
@@ -48,7 +47,7 @@ func (dec *Decoder) decodePacket() (p *Packet, err error) {
 	}
 	headerCount := binary.BigEndian.Uint16(u16)
 
-	p.headers = make([]Header, headerCount)
+	p.headers = make([]*Header, headerCount)
 	for i := 0; i < len(p.headers); i++ {
 		p.headers[i], err = dec.decodeHeader()
 		if err != nil {
@@ -62,7 +61,7 @@ func (dec *Decoder) decodePacket() (p *Packet, err error) {
 	}
 	messageCount := binary.BigEndian.Uint16(u16)
 
-	p.messages = make([]Message, messageCount)
+	p.messages = make([]*Message, messageCount)
 	for i := 0; i < len(p.messages); i++ {
 		p.messages[i], err = dec.decodeMessage()
 		if err != nil {
@@ -74,7 +73,7 @@ func (dec *Decoder) decodePacket() (p *Packet, err error) {
 }
 
 func (dec *Decoder) decodeHeader() (h *Header, err error) {
-	h = Header{}
+	h = &Header{}
 	u8 := make([]byte, 1)
 	u16 := make([]byte, 2)
 	u32 := make([]byte, 4)
@@ -96,14 +95,14 @@ func (dec *Decoder) decodeHeader() (h *Header, err error) {
 	if err != nil {
 		return nil, err
 	}
-	h.mustUnderstand = u8[0]
+	h.mustUnderstand = u8[0] != 0
 
 	_, err = dec.r.Read(u32)
 	if err != nil {
 		return nil, err
 	}
 
-	var amf0Decoder amf0.Decoder = NewDecoder(dec.r)
+	var amf0Decoder *amf0.Decoder = amf0.NewDecoder(dec.r)
 	h.data, err = amf0Decoder.Decode()
 	if err != nil {
 		return nil, err
@@ -113,7 +112,7 @@ func (dec *Decoder) decodeHeader() (h *Header, err error) {
 }
 
 func (dec *Decoder) decodeMessage() (m *Message, err error) {
-	m = Message{}
+	m = &Message{}
 	u16 := make([]byte, 2)
 	u32 := make([]byte, 4)
 
@@ -148,8 +147,8 @@ func (dec *Decoder) decodeMessage() (m *Message, err error) {
 		return nil, err
 	}
 
-	var amf0Decoder amf0.Decoder = NewDecoder(dec.r)
-	m.message, err = amf0Decoder.Decode()
+	var amf0Decoder *amf0.Decoder = amf0.NewDecoder(dec.r)
+	m.data, err = amf0Decoder.Decode()
 	if err != nil {
 		return nil, err
 	}

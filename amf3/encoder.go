@@ -79,6 +79,11 @@ func (enc *Encoder) encodeValue(v interface{}) error {
 		if err != nil {
 			return err
 		}
+	} else if _, ok := v.(NullStringType); ok {
+		_, err := enc.bw.Write([]byte{ StringMarker, 0x01 })
+		if err != nil {
+			return err
+		}
 	} else if value, ok := v.(*XMLDocumentType); ok {
 		_, err := enc.bw.Write([]byte{XmlDocMarker})
 		if err != nil {
@@ -155,6 +160,49 @@ func (enc *Encoder) encodeValue(v interface{}) error {
 			}
 			enc.bw.Write([]byte(*value))
 		}
+	} else if value, ok := v.(*ArrayType); ok {
+		_, err := enc.bw.Write([]byte{ArrayMarker})
+		if err != nil {
+			return err
+		}
+		ok, err := enc.writeObjectRef(value)
+		if err != nil {
+			return err
+		}
+		if ok {
+			return nil
+		} else {
+			//the array hasn't already been written, so write it out
+			//First, the length of the dense part
+			enc.refObjects = append(enc.refObjects, value)
+			length := len(value.Dense)
+			err = EncodeUInt29(enc.bw, uint32(length<<1 | 0x01))
+			if err != nil {
+				return err
+			}
+
+			//Now the associative part
+			var k StringType
+			for k = range value.Associative {
+				err = enc.writeString(k)
+				if err != nil {
+					return err
+				}
+				err = enc.encodeValue(value.Associative[k])
+				if err != nil {
+					return err
+				}
+			}
+			enc.encodeValue(NullType{})
+
+			//Finally, the dense items
+			for i := range value.Dense {
+				err = enc.encodeValue(value.Dense[i])
+				if err != nil {
+					return err
+				}
+			}
+		}
 	}
 	return nil
 }
@@ -162,7 +210,7 @@ func (enc *Encoder) encodeValue(v interface{}) error {
 func (enc *Encoder) writeString(str StringType) error {
 	for i, s := range enc.refStrings {
 		if s == str {
-			u := uint32(i<<1 | 0x01)
+			u := uint32(i<<1)
 			err := EncodeUInt29(enc.bw, u)
 			return err
 		}
@@ -178,7 +226,7 @@ func (enc *Encoder) writeString(str StringType) error {
 func (enc *Encoder) writeObjectRef(v interface{}) (ok bool, err error) {
 	for i, obj := range enc.refObjects {
 		if obj == v {
-			u := uint32(i<<1 | 0x01)
+			u := uint32(i<<1)
 			err = EncodeUInt29(enc.bw, u)
 			if err != nil {
 				return false, err
@@ -191,7 +239,7 @@ func (enc *Encoder) writeObjectRef(v interface{}) (ok bool, err error) {
 
 func writeUTF8(w io.Writer, str string) error {
 	length := len(str)
-	u := uint32(length << 1)
+	u := uint32(length << 1 | 0x01)
 	err := EncodeUInt29(w, u)
 	if err != nil {
 		return err

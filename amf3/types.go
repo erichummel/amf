@@ -15,6 +15,7 @@ type TrueType struct {
 type IntegerType uint32
 type DoubleType float64
 type StringType string
+type NullStringType StringType
 type XMLDocumentType string
 type DateType float64
 type ArrayType struct {

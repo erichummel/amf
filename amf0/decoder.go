@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"math"
+	"github.com/marcuswu/amf/amf3"
 )
 
 type Decoder struct {
@@ -161,8 +162,8 @@ func (dec *Decoder) decodeValue() (interface{}, error) {
 		*object = TypedObjectType{ClassName: StringType(classNameBytes), Object: _Object(obj)}
 		return object, nil
 	case SwitchToAmf3Marker:
-		var obj amf3.ObjectType
-		var amf3Decoder amf3.Decoder = NewDecoder(dec.r)
+		var obj interface {}
+		var amf3Decoder *amf3.Decoder = amf3.NewDecoder(dec.r)
 		obj, err = amf3Decoder.Decode()
 		if err != nil {
 			return nil, err
