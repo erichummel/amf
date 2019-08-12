@@ -20,24 +20,24 @@ func TestReadAMFPacket(t *testing.T) {
 	if err != nil {
 		t.Errorf("test for %s error: %s", "foo", err)
 	} else {
-		if got.version != 3 {
-			t.Errorf("expected version 3, got %v", got.version)
+		if got.Version != 3 {
+			t.Errorf("expected Version 3, got %v", got.Version)
 		}
-		if len(got.headers) != 0 {
-			t.Errorf("expected 0 headers, got %v", len(got.headers))
-		}
-
-		if len(got.messages) != 1 {
-			t.Errorf("expected 1 message, got %v", len(got.messages))
+		if len(got.Headers) != 0 {
+			t.Errorf("expected 0 Headers, got %v", len(got.Headers))
 		}
 
-		m := got.messages[0]
+		if len(got.Messages) != 1 {
+			t.Errorf("expected 1 message, got %v", len(got.Messages))
+		}
+
+		m := got.Messages[0]
 		//now check message contents -- should contain an array of length 1 containing an array of length 7
-		if _, ok := m.data.(*amf3.ArrayType); !ok {
-			t.Errorf("expected amf3 ArrayType message data, got %s", reflect.TypeOf(m.data).Kind())
+		if _, ok := m.Data.(*amf3.ArrayType); !ok {
+			t.Errorf("expected amf3 ArrayType message Data, got %s", reflect.TypeOf(m.Data).Kind())
 		}
 
-		var arrayValue *amf3.ArrayType = m.data.(*amf3.ArrayType)
+		var arrayValue *amf3.ArrayType = m.Data.(*amf3.ArrayType)
 
 		if len(arrayValue.Dense) != 1 {
 			t.Errorf("expected message contents to be an array of length 1, got length %d", len(arrayValue.Dense))
@@ -48,7 +48,7 @@ func TestReadAMFPacket(t *testing.T) {
 		internalArray, ok = arrayValue.Dense[0].(*amf3.ArrayType)
 
 		if !ok {
-			t.Errorf("expected amf3 ArrayType message data, got %s", reflect.TypeOf(internalArray).Kind())
+			t.Errorf("expected amf3 ArrayType message Data, got %s", reflect.TypeOf(internalArray).Kind())
 		}
 
 		if len(internalArray.Dense) != 7 {

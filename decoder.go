@@ -39,7 +39,7 @@ func (dec *Decoder) decodePacket() (p *Packet, err error) {
 	if err != nil {
 		return nil, err
 	}
-	p.version = binary.BigEndian.Uint16(u16)
+	p.Version = binary.BigEndian.Uint16(u16)
 
 	_, err = dec.r.Read(u16)
 	if err != nil {
@@ -47,9 +47,9 @@ func (dec *Decoder) decodePacket() (p *Packet, err error) {
 	}
 	headerCount := binary.BigEndian.Uint16(u16)
 
-	p.headers = make([]*Header, headerCount)
-	for i := 0; i < len(p.headers); i++ {
-		p.headers[i], err = dec.decodeHeader()
+	p.Headers = make([]*Header, headerCount)
+	for i := 0; i < len(p.Headers); i++ {
+		p.Headers[i], err = dec.decodeHeader()
 		if err != nil {
 			return nil, err
 		}
@@ -61,9 +61,9 @@ func (dec *Decoder) decodePacket() (p *Packet, err error) {
 	}
 	messageCount := binary.BigEndian.Uint16(u16)
 
-	p.messages = make([]*Message, messageCount)
-	for i := 0; i < len(p.messages); i++ {
-		p.messages[i], err = dec.decodeMessage()
+	p.Messages = make([]*Message, messageCount)
+	for i := 0; i < len(p.Messages); i++ {
+		p.Messages[i], err = dec.decodeMessage()
 		if err != nil {
 			return nil, err
 		}
@@ -127,7 +127,7 @@ func (dec *Decoder) decodeMessage() (m *Message, err error) {
 	if err != nil {
 		return nil, err
 	}
-	m.targetUri = string(targetUriBytes)
+	m.TargetURI = string(targetUriBytes)
 
 	_, err = dec.r.Read(u16)
 	if err != nil {
@@ -140,7 +140,7 @@ func (dec *Decoder) decodeMessage() (m *Message, err error) {
 	if err != nil {
 		return nil, err
 	}
-	m.responseUri = string(responseUriBytes)
+	m.ResponseURI = string(responseUriBytes)
 
 	_, err = dec.r.Read(u32)
 	if err != nil {
@@ -148,7 +148,7 @@ func (dec *Decoder) decodeMessage() (m *Message, err error) {
 	}
 
 	var amf0Decoder *amf0.Decoder = amf0.NewDecoder(dec.r)
-	m.data, err = amf0Decoder.Decode()
+	m.Data, err = amf0Decoder.Decode()
 	if err != nil {
 		return nil, err
 	}

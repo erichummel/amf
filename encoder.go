@@ -36,31 +36,31 @@ func (enc *Encoder) Encode(p *Packet) (err error) {
 func (enc *Encoder) encodePacket(p *Packet) (err error) {
 	u16 := make([]byte, 2)
 
-	binary.BigEndian.PutUint16(u16, p.version)
+	binary.BigEndian.PutUint16(u16, p.Version)
 	_, err = enc.w.Write(u16)
 	if err != nil {
 		return nil
 	}
 
-	binary.BigEndian.PutUint16(u16, uint16(len(p.headers)))
+	binary.BigEndian.PutUint16(u16, uint16(len(p.Headers)))
 	_, err = enc.w.Write(u16)
 	if err != nil {
 		return err
 	}
-	for i := range p.headers {
-		err = enc.encodeHeader(p.headers[i])
+	for i := range p.Headers {
+		err = enc.encodeHeader(p.Headers[i])
 		if err != nil {
 			return err
 		}
 	}
 
-	binary.BigEndian.PutUint16(u16, uint16(len(p.messages)))
+	binary.BigEndian.PutUint16(u16, uint16(len(p.Messages)))
 	_, err = enc.w.Write(u16)
 	if err != nil {
 		return err
 	}
-	for i := range p.messages {
-		err = enc.encodeMessage(p.messages[i])
+	for i := range p.Messages {
+		err = enc.encodeMessage(p.Messages[i])
 		if err != nil {
 			return err
 		}
@@ -125,31 +125,31 @@ func (enc *Encoder) encodeMessage(m *Message) (err error) {
 	u16 := make([]byte, 2)
 	u32 := make([]byte, 4)
 
-	binary.BigEndian.PutUint16(u16, uint16(len(m.targetUri)))
+	binary.BigEndian.PutUint16(u16, uint16(len(m.TargetURI)))
 	_, err = enc.w.Write(u16)
 	if err != nil {
 		return err
 	}
 
-	_, err = enc.w.Write([]byte(m.targetUri))
+	_, err = enc.w.Write([]byte(m.TargetURI))
 	if err != nil {
 		return err
 	}
 
-	binary.BigEndian.PutUint16(u16, uint16(len(m.responseUri)))
+	binary.BigEndian.PutUint16(u16, uint16(len(m.ResponseURI)))
 	_, err = enc.w.Write(u16)
 	if err != nil {
 		return err
 	}
 
-	_, err = enc.w.Write([]byte(m.responseUri))
+	_, err = enc.w.Write([]byte(m.ResponseURI))
 	if err != nil {
 		return err
 	}
 
 	var messageBuffer *bytes.Buffer = &bytes.Buffer{}
 	var amf3Encoder *amf3.Encoder = amf3.NewEncoder(messageBuffer)
-	amf3Encoder.Encode(m.data)
+	amf3Encoder.Encode(m.Data)
 //	messageLen := uint32(messageBuffer.Len())
 
 	binary.BigEndian.PutUint32(u32, 1)

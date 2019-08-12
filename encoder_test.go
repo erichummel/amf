@@ -10,7 +10,7 @@ import (
 func TestWriteAMFPacket(t *testing.T) {
 	//Create a Packet and then encode it -- compare the bytes generated
 	packet := NewPacket(0, 1)
-	packet.version = 3
+	packet.Version = 3
 
 	message := Message{}
 
@@ -29,11 +29,11 @@ func TestWriteAMFPacket(t *testing.T) {
 
 	packetBody.Dense[0] = internalArray
 
-	message.targetUri = "Login.processLogin"
-	message.responseUri = "/0"
-	message.data = packetBody
+	message.TargetURI = "Login.processLogin"
+	message.ResponseURI = "/0"
+	message.Data = packetBody
 
-	packet.messages[0] = &message
+	packet.Messages[0] = &message
 
 	var buffer *bytes.Buffer = &bytes.Buffer{}
 	encoder := NewEncoder(buffer)
